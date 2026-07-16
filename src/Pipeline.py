@@ -12,8 +12,8 @@ companies = ["RELIANCE.NS", "IOC.NS", "BPCL.NS", "HINDPETRO.NS"]
 df_stocks = df.loc[:, (slice(None), companies)]
 df_stacks = df_stocks.stack(level=1)
 
-brent_close = df["Close"]["BZ=F"]
-usdinr_close = df["Close"]["USDINR=X"]
+brent_close = df["Close"]["BZ=F"].ffill().bfill()
+usdinr_close = df["Close"]["USDINR=X"].ffill().bfill()
 
 df_stacks["Brent_Crude"] = df_stacks.index.get_level_values("Date").map(brent_close)
 df_stacks["USD_INR"] = df_stacks.index.get_level_values("Date").map(usdinr_close)
