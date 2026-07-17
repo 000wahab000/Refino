@@ -13,7 +13,7 @@ if os.path.exists("raw_stock_data.csv"):
     start_date = (last_date + dt.timedelta(days=1)).date()
 else:
     existing_df = None
-    start_date = "2025-01-01"
+    start_date = dt.date(2025, 1, 1)
 
 end_date = dt.date.today() + dt.timedelta(days=1)
 
@@ -42,10 +42,14 @@ if start_date < end_date:
             
         combined_df = combined_df.drop_duplicates(subset=["Date", "Ticker"], keep="last")
         
+        combined_df = combined_df.sort_values(["Ticker", "Date"])
+        combined_df["Weekly_Gain"] = combined_df.groupby("Ticker")["Close"].pct_change(periods=5)
+        combined_df["Monthly_Gain"] = combined_df.groupby("Ticker")["Close"].pct_change(periods=21)
+        
         combined_df.to_csv("raw_stock_data.csv", index=False)
         
         rounded_df = combined_df.copy()
-        numeric_cols = ["Close", "High", "Low", "Open", "Volume", "Brent_Crude", "USD_INR", "Daily_Change"]
+        numeric_cols = ["Close", "High", "Low", "Open", "Volume", "Brent_Crude", "USD_INR", "Daily_Change", "Weekly_Gain", "Monthly_Gain"]
         rounded_df[numeric_cols] = rounded_df[numeric_cols].round(3)
         rounded_df.to_csv("cleaned_stock_data.csv", index=False)
         
