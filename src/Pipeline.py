@@ -69,8 +69,18 @@ def validate_data(df_val):
     df_sorted["Pct_Change"] = df_sorted.groupby("Ticker")["Close"].pct_change()
     jumps = df_sorted[df_sorted["Pct_Change"].abs() > 0.15]
     if not jumps.empty:
-        print("above 15% jump")
+        print("above 15% daily jump")
         print(jumps[["Date", "Ticker", "Close", "Pct_Change"]])
+
+    weekly_jumps = df_val[df_val["Weekly_Gain"].abs() > 0.25]
+    if not weekly_jumps.empty:
+        print("above 25% weekly change")
+        print(weekly_jumps[["Date", "Ticker", "Close", "Weekly_Gain"]])
+
+    monthly_jumps = df_val[df_val["Monthly_Gain"].abs() > 0.40]
+    if not monthly_jumps.empty:
+        print("above 40% monthly change")
+        print(monthly_jumps[["Date", "Ticker", "Close", "Monthly_Gain"]])
 
     all_dates = set(df_val["Date"].unique())
     for ticker in df_val["Ticker"].unique():
