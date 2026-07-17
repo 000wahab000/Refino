@@ -9,7 +9,7 @@ pd.set_option('display.colheader_justify', 'center')
 
 if os.path.exists("raw_stock_data.csv"):
     existing_df = pd.read_csv("raw_stock_data.csv")
-    last_date = pd.to_datetime(existing_df["Date"]).max()
+    last_date = pd.to_datetime(existing_df["Date"],format="mixed").max()
     start_date = (last_date + dt.timedelta(days=1)).date()
 else:
     existing_df = None
@@ -53,3 +53,28 @@ if start_date < end_date:
         print(rounded_df.tail(10))
 else:
     print("Already up to date!")
+
+def validate_data(df_val):
+    duplicates = df_val[df_val.duplicated(subset=["Date", "Ticker"])]
+    if not duplicates.empty:
+        print("Duplicates")
+        print(duplicates[["Date", "Ticker"]])
+
+    
+    df_sorted = df_val.sort_values(["Ticker", "Date"]).copy()
+    df_sorted["Pct_Change"] = df_sorted.groupby("Ticker")["Close"].pct_change()
+    jumps = df_sorted[df_sorted["Pct_Change"].abs() > 0.15]
+    if not jumps.empty:
+        print("above 15% jump")
+        print(jumps[["Date", "Ticker", "Close", "Pct_Change"]])
+
+    all_dates = set(df_val["Date"].unique())
+    for ticker in df_val["Ticker"].unique():
+        ticker_dates = set(df_val[df_val["Ticker"] == ticker]["Date"].unique())
+        missing = all_dates - ticker_dates
+        if missing:
+            print(f"{ticker} is missing dates: {sorted(list(missing))}")
+
+if os.path.exists("raw_stock_data.csv"):
+    df_to_validate = pd.read_csv("raw_stock_data.csv")
+    validate_data(df_to_validate)
